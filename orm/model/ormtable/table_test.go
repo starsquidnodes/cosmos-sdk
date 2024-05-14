@@ -11,7 +11,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	dbm "github.com/tendermint/tm-db"
+	dbm "github.com/cometbft/cometbft-db"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -23,7 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/orm/types/kv"
 
 	queryv1beta1 "cosmossdk.io/api/cosmos/base/query/v1beta1"
-	sdkerrors "github.com/cosmos/cosmos-sdk/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/orm/encoding/ormkv"
 	"github.com/cosmos/cosmos-sdk/orm/internal/testkv"
 	"github.com/cosmos/cosmos-sdk/orm/internal/testpb"
