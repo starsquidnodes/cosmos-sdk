@@ -22,7 +22,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/orm/types/kv"
 
-	queryv1beta1 "github.com/cosmos/cosmos-sdk/api/cosmos/base/query/v1beta1"
+	queryv1beta1 "cosmossdk.io/api/cosmos/base/query/v1beta1"
 	sdkerrors "github.com/cosmos/cosmos-sdk/errors"
 	"github.com/cosmos/cosmos-sdk/orm/encoding/ormkv"
 	"github.com/cosmos/cosmos-sdk/orm/internal/testkv"
