@@ -6,14 +6,15 @@ import (
 	"os"
 
 	"github.com/pelletier/go-toml/v2"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 
 	"cosmossdk.io/log"
 )
 
-// ServerModule is a server module that can be started and stopped.
-type ServerModule interface {
+// ServerComponent is a server component that can be started and stopped.
+type ServerComponent interface {
 	Name() string
 
 	Start(context.Context) error
@@ -30,7 +31,12 @@ type HasConfig interface {
 	Config() any
 }
 
-var _ ServerModule = (*Server)(nil)
+// HasStartFlags is a server module that has start flags.
+type HasStartFlags interface {
+	StartFlags() *pflag.FlagSet
+}
+
+var _ ServerComponent = (*Server)(nil)
 
 // Configs returns a viper instance of the config file
 func ReadConfig(configPath string) (*viper.Viper, error) {
@@ -46,14 +52,14 @@ func ReadConfig(configPath string) (*viper.Viper, error) {
 }
 
 type Server struct {
-	logger  log.Logger
-	modules []ServerModule
+	logger     log.Logger
+	components []ServerComponent
 }
 
-func NewServer(logger log.Logger, modules ...ServerModule) *Server {
+func NewServer(logger log.Logger, components ...ServerComponent) *Server {
 	return &Server{
-		logger:  logger,
-		modules: modules,
+		logger:     logger,
+		components: components,
 	}
 }
 
@@ -66,7 +72,7 @@ func (s *Server) Start(ctx context.Context) error {
 	s.logger.Info("starting servers...")
 
 	g, ctx := errgroup.WithContext(ctx)
-	for _, mod := range s.modules {
+	for _, mod := range s.components {
 		mod := mod
 		g.Go(func() error {
 			return mod.Start(ctx)
@@ -90,7 +96,7 @@ func (s *Server) Stop(ctx context.Context) error {
 	s.logger.Info("stopping servers...")
 
 	g, ctx := errgroup.WithContext(ctx)
-	for _, mod := range s.modules {
+	for _, mod := range s.components {
 		mod := mod
 		g.Go(func() error {
 			return mod.Stop(ctx)
@@ -103,7 +109,7 @@ func (s *Server) Stop(ctx context.Context) error {
 // CLICommands returns all CLI commands of all modules.
 func (s *Server) CLICommands() CLIConfig {
 	commands := CLIConfig{}
-	for _, mod := range s.modules {
+	for _, mod := range s.components {
 		if climod, ok := mod.(HasCLICommands); ok {
 			commands.Commands = append(commands.Commands, climod.CLICommands().Commands...)
 			commands.Queries = append(commands.Queries, climod.CLICommands().Queries...)
@@ -117,7 +123,7 @@ func (s *Server) CLICommands() CLIConfig {
 // Configs returns all configs of all server modules.
 func (s *Server) Configs() map[string]any {
 	cfgs := make(map[string]any)
-	for _, mod := range s.modules {
+	for _, mod := range s.components {
 		if configmod, ok := mod.(HasConfig); ok {
 			cfg := configmod.Config()
 			cfgs[mod.Name()] = cfg
@@ -125,6 +131,18 @@ func (s *Server) Configs() map[string]any {
 	}
 
 	return cfgs
+}
+
+// Flags returns all flags of all server modules.
+func (s *Server) StartFlags() []*pflag.FlagSet {
+	flags := []*pflag.FlagSet{}
+	for _, mod := range s.components {
+		if startmod, ok := mod.(HasStartFlags); ok {
+			flags = append(flags, startmod.StartFlags())
+		}
+	}
+
+	return flags
 }
 
 // WriteConfig writes the config to the given path.

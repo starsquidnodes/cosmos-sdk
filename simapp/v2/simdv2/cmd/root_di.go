@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -9,10 +10,12 @@ import (
 	clientv2keyring "cosmossdk.io/client/v2/autocli/keyring"
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/appmodule/v2"
+	corecontext "cosmossdk.io/core/context"
 	"cosmossdk.io/core/legacy"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 	"cosmossdk.io/runtime/v2"
+	serverv2 "cosmossdk.io/server/v2"
 	"cosmossdk.io/simapp/v2"
 	"cosmossdk.io/x/auth/tx"
 	authtxconfig "cosmossdk.io/x/auth/tx/config"
@@ -23,11 +26,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/std"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
+
+var homeFlag = "home"
 
 // NewRootCmd creates a new root command for simd. It is called once in the main function.
 func NewRootCmd() *cobra.Command {
@@ -92,12 +96,17 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			customAppTemplate, customAppConfig := initAppConfig()
-			customCMTConfig := initCometBFTConfig()
+			log, err := serverv2.NewLogger( /* viper */ nil, cmd.OutOrStdout())
+			viper, _ := serverv2.ReadConfig(cmd.Flag(homeFlag).Value.String())
+			cmd.SetContext(context.WithValue(cmd.Context(), corecontext.ViperContextKey{}, viper))
+			cmd.SetContext(context.WithValue(cmd.Context(), corecontext.LoggerContextKey{}, log))
 
-			return server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customCMTConfig)
+			return nil
 		},
 	}
+
+	rootCmd.PersistentFlags().String(homeFlag, simapp.DefaultNodeHome, "set home directory")
+	// set logger flags
 
 	initRootCmd(
 		rootCmd,

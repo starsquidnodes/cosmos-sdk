@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	corecontext "cosmossdk.io/core/context"
 	abciserver "github.com/cometbft/cometbft/abci/server"
 	cmtcmd "github.com/cometbft/cometbft/cmd/cometbft/commands"
 	cmtcfg "github.com/cometbft/cometbft/config"
@@ -63,12 +64,14 @@ type App[T transaction.Tx] interface {
 }
 
 func NewCometBFTServer[T transaction.Tx](
+	// needs to take an app creator that gives bac the app manager
 	app *appmanager.AppManager[T],
 	store types.Store,
 	logger log.Logger,
-	cfg Config,
 	txCodec transaction.Codec[T],
 ) *CometBFTServer[T] {
+	// change config parsing in start for all servers
+
 	logger = logger.With("module", "cometbft-server")
 
 	// create noop mempool
@@ -106,6 +109,9 @@ func (s *CometBFTServer[T]) Name() string {
 }
 
 func (s *CometBFTServer[T]) Start(ctx context.Context) error {
+	logger := ctx.Value(corecontext.LoggerContextKey{}).(log.Logger)
+	viper := ctx.Value(corecontext.ViperContextKey{}).(*viper.Viper)
+
 	wrappedLogger := cometlog.CometLoggerWrapper{Logger: s.logger}
 	if s.config.Standalone {
 		svr, err := abciserver.NewServer(s.config.Addr, s.config.Transport, s.App)

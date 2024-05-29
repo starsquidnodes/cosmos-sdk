@@ -6,34 +6,36 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"cosmossdk.io/log"
 )
 
-func Commands(logger log.Logger, homePath string, modules ...ServerModule) (CLIConfig, error) {
-	if len(modules) == 0 {
-		// TODO figure if we should define default modules
+func Commands(logger log.Logger, homePath string, components ...ServerComponent) (CLIConfig, error) {
+	if len(components) == 0 {
+		// TODO figure if we should define default components
 		// and if so it should be done here to avoid uncessary dependencies
 		return CLIConfig{}, errors.New("no modules provided")
 	}
 
-	v, err := ReadConfig(filepath.Join(homePath, "config"))
-	if err != nil {
-		return CLIConfig{}, fmt.Errorf("failed to read config: %w", err)
+	server := NewServer(logger, components...)
+	flags := server.StartFlags()
+
+	if _, err := os.Stat(homePath); os.IsNotExist(err) {
+		_ = server.WriteConfig(homePath)
 	}
 
-	server := NewServer(logger, modules...)
 	startCmd := &cobra.Command{
-		Use:   "start",
-		Short: "Run the application",
+		Use:                "start",
+		Short:              "Run the application",
+		DisableFlagParsing: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := v.BindPFlags(cmd.Flags()); err != nil { // the server modules are already instantiated here, so binding the flags is useless.
-				return err
-			}
+			// get viper from context
+			flags := *pflag.FlagSet{} // magic flag parsing
+			// bind flags to viper
 
 			srvConfig := Config{StartBlock: true}
 			ctx := cmd.Context()
@@ -65,8 +67,8 @@ func Commands(logger log.Logger, homePath string, modules ...ServerModule) (CLIC
 	return cmds, nil
 }
 
-func AddCommands(rootCmd *cobra.Command, logger log.Logger, homePath string, modules ...ServerModule) error {
-	cmds, err := Commands(logger, homePath, modules...)
+func AddCommands(rootCmd *cobra.Command, logger log.Logger, homePath string, components ...ServerComponent) error {
+	cmds, err := Commands(logger, homePath, components...)
 	if err != nil {
 		return err
 	}

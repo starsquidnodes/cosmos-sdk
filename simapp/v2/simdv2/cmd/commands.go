@@ -18,6 +18,7 @@ import (
 	"cosmossdk.io/core/transaction"
 	"cosmossdk.io/log"
 	runtimev2 "cosmossdk.io/runtime/v2"
+	serverv2 "cosmossdk.io/server/v2"
 	"cosmossdk.io/server/v2/cometbft"
 	"cosmossdk.io/simapp/v2"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
@@ -30,6 +31,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+
 	// TODO migrate all server dependencies to server/v2
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -65,16 +67,15 @@ func initRootCmd(
 	cfg := sdk.GetConfig()
 	cfg.Seal()
 
+	_ = serverv2.AddCommands(rootCmd, log.NewNopLogger(), simapp.DefaultNodeHome, nil /* instantiate comet, api, grpc server */)
+
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(moduleManager),
 		debug.Cmd(),
 		confixcmd.ConfigCommand(),
-		startCommand(&temporaryTxDecoder{txConfig}),
 		// pruning.Cmd(newApp),
 		// snapshot.Cmd(newApp),
 	)
-
-	// server.AddCommands(rootCmd, log.NewNopLogger(), tempDir()) // TODO: How to cast from AppModule to ServerModule
 
 	// add keybase, auxiliary RPC, query, genesis, and tx child commands
 	rootCmd.AddCommand(
@@ -87,6 +88,7 @@ func initRootCmd(
 	)
 }
 
+// to delete //
 func startCommand(txCodec transaction.Codec[transaction.Tx]) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
