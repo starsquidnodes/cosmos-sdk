@@ -7,6 +7,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	otelcodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
@@ -90,7 +91,15 @@ func (app *BaseApp) RegisterGRPCServer(server gogogrpc.Server, logQueries bool) 
 
 		span.SetAttributes(attribute.String("http.method", grpcInfo.FullMethod))
 
-		return handler(grpcCtx, req)
+		resp, err = handler(grpcCtx, req)
+
+		if err != nil {
+			span.SetStatus(otelcodes.Error, err.Error())
+		} else {
+			span.SetStatus(otelcodes.Ok, "OK")
+		}
+
+		return resp, err
 	}
 
 	// Loop through all services and methods, add the interceptor, and register
