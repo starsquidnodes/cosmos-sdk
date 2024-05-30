@@ -11,7 +11,7 @@ option go_package = "cosmossdk.io/x/accounts/defaults/multisig/v1";
 // MsgInit is used to initialize a multisig account.
 message MsgInit {
   repeated Member members = 1;
-  Config          Config  = 2;
+  Config          config  = 2;
 }
 
 // MsgInitResponse is the response returned after account initialization.

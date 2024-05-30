@@ -12,6 +12,7 @@ import (
 	"cosmossdk.io/x/accounts/cli"
 	v1 "cosmossdk.io/x/accounts/v1"
 
+	coretransaction "cosmossdk.io/core/transaction"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -51,6 +52,11 @@ func (m AppModule) IsAppModule() {}
 func (AppModule) Name() string { return ModuleName }
 
 func (m AppModule) RegisterInterfaces(registrar registry.InterfaceRegistrar) {
+	registrar.RegisterImplementations((*coretransaction.Msg)(nil),
+		&v1.MsgInit{},
+		&v1.MsgExecute{},
+		&v1.MsgExecute{},
+	)
 	msgservice.RegisterMsgServiceDesc(registrar, v1.MsgServiceDesc())
 }
 
