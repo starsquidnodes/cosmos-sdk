@@ -31,7 +31,6 @@ func (app *BaseApp) GRPCQueryRouter() *GRPCQueryRouter { return app.grpcQueryRou
 
 // RegisterGRPCServer registers gRPC services directly with the gRPC server.
 func (app *BaseApp) RegisterGRPCServer(server gogogrpc.Server, logQueries bool) {
-
 	tracer := otel.Tracer(tracerName)
 
 	// Define an interceptor for all gRPC queries: this interceptor will create
