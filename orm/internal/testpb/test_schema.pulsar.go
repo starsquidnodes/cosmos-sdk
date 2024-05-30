@@ -2,10 +2,10 @@
 package testpb
 
 import (
+	_ "cosmossdk.io/api/cosmos/orm/v1"
 	binary "encoding/binary"
 	fmt "fmt"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
-	_ "cosmossdk.io/api/cosmos/orm/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -4492,6 +4492,7 @@ type ExampleTable struct {
 	Map      map[string]uint32            `protobuf:"bytes,18,rep,name=map,proto3" json:"map,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
 	Msg      *ExampleTable_ExampleMessage `protobuf:"bytes,19,opt,name=msg,proto3" json:"msg,omitempty"`
 	// Types that are assignable to Sum:
+	//
 	//	*ExampleTable_Oneof
 	Sum isExampleTable_Sum `protobuf_oneof:"sum"`
 }
