@@ -4692,6 +4692,8 @@ var file_cosmos_bank_v1beta1_bank_proto_rawDesc = []byte{
 	0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
+var RemoveMe = file_cosmos_bank_v1beta1_authz_proto_rawDesc
+
 var (
 	file_cosmos_bank_v1beta1_bank_proto_rawDescOnce sync.Once
 	file_cosmos_bank_v1beta1_bank_proto_rawDescData = file_cosmos_bank_v1beta1_bank_proto_rawDesc

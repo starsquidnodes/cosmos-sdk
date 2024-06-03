@@ -2,11 +2,14 @@ package aminojson
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	gogoproto "github.com/cosmos/gogoproto/proto"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/dynamicpb"
 
 	"cosmossdk.io/x/tx/signing/aminojson"
 
@@ -78,4 +81,39 @@ func TestRepeatedFields(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestConfio_Message(t *testing.T) {
+	aj := aminojson.NewEncoder(aminojson.EncoderOptions{DoNotSortFields: true})
+	// test pulsar type
+	msg := &pulsarpb.MsgStoreCode{
+		Sender: "foo",
+		InstantiatePermission: &pulsarpb.AccessConfig{
+			Permission: pulsarpb.AccessType_ACCESS_TYPE_EVERYBODY,
+		},
+	}
+	bz, err := aj.Marshal(msg)
+	require.NotNil(t, bz)
+	require.NoError(t, err)
+
+	// test gogo type
+	gogoMsg := &gogopb.MsgStoreCode{
+		Sender: "foo",
+		InstantiatePermission: &gogopb.AccessConfig{
+			Permission: gogopb.AccessTypeEverybody,
+		},
+	}
+	// convert the gogo type into an dynamicpb
+	typeURL := strings.TrimPrefix(gogoproto.MessageName(gogoMsg), "/")
+	msgDesc, err := gogoproto.GogoResolver.FindDescriptorByName(protoreflect.FullName(typeURL))
+	require.NoError(t, err)
+	dynamicMsg := dynamicpb.NewMessageType(msgDesc.(protoreflect.MessageDescriptor)).New().Interface()
+	gogoProtoBz, err := gogoproto.Marshal(gogoMsg)
+	require.NoError(t, err)
+	// unmarshal into dynamic message
+	err = proto.Unmarshal(gogoProtoBz, dynamicMsg)
+	require.NoError(t, err)
+	dynamicJSONbz, err := aj.Marshal(dynamicMsg)
+	require.NoError(t, err)
+	require.Equal(t, string(bz), string(dynamicJSONbz))
 }
