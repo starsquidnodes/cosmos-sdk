@@ -5,7 +5,7 @@ set -o nounset
 set -x
 
 ROOT=$PWD
-SIMD="${SIMD:-go run ./simapp/v2/simdv2/main.go}"
+SIMD="${SIMD:-simapp/v2/main}"
 CONFIG="${CONFIG:-$HOME/.simappv2/config}"
 
 $SIMD init simapp-v2-node --chain-id simapp-v2-chain
