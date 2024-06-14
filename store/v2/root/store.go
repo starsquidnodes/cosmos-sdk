@@ -257,6 +257,40 @@ func (s *Store) SetCommitHeader(h *coreheader.Info) {
 	s.commitHeader = h
 }
 
+// InitGenesis writes the genesis changeset to SC and SS and returns the
+// workingHash of the CommitInfo.
+func (s *Store) InitGenesis(cs *corestore.Changeset) ([]byte, error) {
+	if s.telemetry != nil {
+		now := time.Now()
+		defer s.telemetry.MeasureSince(now, "root_store", "init_genesis")
+	}
+
+	// write the genesis changeset to the SC and SS backends
+	eg := new(errgroup.Group)
+	eg.Go(func() error {
+		if err := s.writeSC(cs); err != nil {
+			return fmt.Errorf("failed to write SC: %w", err)
+		}
+
+		return nil
+	})
+	eg.Go(func() error {
+		if err := s.stateStorage.ApplyChangeset(s.initialVersion, cs); err != nil {
+			return fmt.Errorf("failed to commit SS: %w", err)
+		}
+
+		return nil
+	})
+	if err := eg.Wait(); err != nil {
+		return nil, err
+	}
+
+	workingHash := s.lastCommitInfo.Hash()
+	s.lastCommitInfo = nil // reset lastCommitInfo to avoid double commit
+
+	return workingHash, nil
+}
+
 // Commit commits all state changes to the underlying SS and SC backends. It
 // writes a batch of the changeset to the SC tree, and retrieves the CommitInfo
 // from the SC tree. Finally, it commits the SC tree and returns the hash of the

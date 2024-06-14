@@ -49,6 +49,12 @@ type RootStore interface {
 	// queries based on block time need to be supported.
 	SetCommitHeader(h *coreheader.Info)
 
+	// InitGenesis initializes the RootStore with the given genesis changeset.
+	//
+	// NOTE: It will write the genesis changeset to the SC and return the hash of
+	// the state but will not commit until Commit() is called.
+	InitGenesis(cs *corestore.Changeset) ([]byte, error)
+
 	// Commit should be responsible for taking the provided changeset and flushing
 	// it to disk. Note, depending on the implementation, the changeset, at this
 	// point, may already be written to the SC backends. Commit() should ensure
