@@ -28,7 +28,7 @@ const (
 	// DefaultHistorical entries is 10000. Apps that don't use IBC can ignore this
 	// value by not adding the staking module to the application module manager's
 	// SetOrderBeginBlockers.
-	DefaultHistoricalEntries uint32 = 10000
+	DefaultHistoricalEntries uint32 = 0
 )
 
 var (

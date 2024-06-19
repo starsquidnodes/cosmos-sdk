@@ -967,17 +967,19 @@ func (app *BaseApp) Commit() (*abci.CommitResponse, error) {
 	}
 
 	abciListeners := app.streamingManager.ABCIListeners
-	if len(abciListeners) > 0 {
-		ctx := app.finalizeBlockState.Context()
-		blockHeight := ctx.BlockHeight()
-		changeSet := app.cms.PopStateCache()
+	// if len(abciListeners) > 0 {
+	ctx := app.finalizeBlockState.Context()
+	blockHeight := ctx.BlockHeight()
+	changeSet := app.cms.PopStateCache()
 
-		for _, abciListener := range abciListeners {
-			if err := abciListener.ListenCommit(ctx, *resp, changeSet); err != nil {
-				app.logger.Error("Commit listening hook failed", "height", blockHeight, "err", err)
-			}
+	app.logger.Info("Committing state", "height", header.Height, "changeSet", changeSet)
+
+	for _, abciListener := range abciListeners {
+		if err := abciListener.ListenCommit(ctx, *resp, changeSet); err != nil {
+			app.logger.Error("Commit listening hook failed", "height", blockHeight, "err", err)
 		}
 	}
+	// }
 
 	// Reset the CheckTx state to the latest committed.
 	//

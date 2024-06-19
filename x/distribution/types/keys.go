@@ -51,8 +51,8 @@ const (
 //
 // - 0x09: Params
 var (
-	FeePoolKey                           = collections.NewPrefix(0) // key for global distribution state
-	ProposerKey                          = collections.NewPrefix(1) // key for the proposer operator address
+	FeePoolKey = collections.NewPrefix(0) // key for global distribution state
+	// ProposerKey                          = collections.NewPrefix(1) // key for the proposer operator address
 	ValidatorOutstandingRewardsPrefix    = collections.NewPrefix(2) // key for outstanding rewards
 	DelegatorWithdrawAddrPrefix          = collections.NewPrefix(3) // key for delegator withdraw address
 	DelegatorStartingInfoPrefix          = collections.NewPrefix(4) // key for delegator starting info

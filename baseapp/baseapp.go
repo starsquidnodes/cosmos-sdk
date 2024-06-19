@@ -309,6 +309,7 @@ func (app *BaseApp) MountStores(keys ...storetypes.StoreKey) {
 			panic(fmt.Sprintf("Unrecognized store key type :%T", key))
 		}
 	}
+	app.cms.AddListeners(keys)
 }
 
 // MountKVStores mounts all IAVL or DB stores to the provided keys in the
