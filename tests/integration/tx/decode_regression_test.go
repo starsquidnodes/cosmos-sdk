@@ -55,7 +55,11 @@ func TestRegression(t *testing.T) {
 			require.Len(t, tx.GetMsgs(), 1)
 
 			a := ante.NewSigVerificationDecorator(accountKeeperMock{codec: addressCodec}, enc.TxConfig.SignModeHandler(), ante.DefaultSigVerificationGasConsumer, nil)
-			ctx := sdk.Context{}.WithChainID("testchain").WithBlockHeight(1).WithGasMeter(storetypes.NewInfiniteGasMeter())
+			ctx := sdk.Context{}.
+				WithChainID("testchain").
+				WithBlockHeight(1).
+				WithGasMeter(storetypes.NewInfiniteGasMeter()).
+				WithEventManager(sdk.NewEventManager())
 
 			var nextCalled bool
 			captureNext := func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
