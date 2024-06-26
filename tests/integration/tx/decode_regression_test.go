@@ -51,6 +51,7 @@ func TestRegression(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tx, err := enc.TxConfig.TxJSONDecoder()([]byte(spec.src))
 			require.NoError(t, err)
+			require.NotNil(t, tx)
 			require.Len(t, tx.GetMsgs(), 1)
 
 			a := ante.NewSigVerificationDecorator(accountKeeperMock{codec: addressCodec}, enc.TxConfig.SignModeHandler(), ante.DefaultSigVerificationGasConsumer, nil)
