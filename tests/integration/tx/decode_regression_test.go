@@ -27,6 +27,9 @@ import (
 )
 
 func TestRegression(t *testing.T) {
+	//
+	// simd tx staking edit-validator --account-number=1 --sequence=2 --commission-rate=0.25 --offline --sign-mode=amino-json --from=mykey   --generate-only > unsigned_tx.json
+	// simd tx sign unsigned_tx.json --chain-id=testchain --from=mykey --offline --sign-mode=amino-json --account-number=1 --sequence=2  > signed_tx.json
 	enc := testutil.MakeTestEncodingConfig(codectestutil.CodecOptions{},
 		gov.AppModule{}, staking.AppModule{})
 	addressCodec := enc.InterfaceRegistry.SigningContext().AddressCodec()
@@ -45,6 +48,9 @@ func TestRegression(t *testing.T) {
 		},
 		"MsgEditValidator - v050": {
 			src: `{"body":{"messages":[{"@type":"/cosmos.staking.v1beta1.MsgEditValidator","description":{"moniker":"[do-not-modify]","identity":"[do-not-modify]","website":"[do-not-modify]","security_contact":"[do-not-modify]","details":"[do-not-modify]"},"validator_address":"cosmosvaloper1a40r995peauyekrkda2uky5h52j0r0ztvglyew","commission_rate":"0.250000000000000000","min_self_delegation":null}],"memo":"","timeout_height":"0","extension_options":[],"non_critical_extension_options":[]},"auth_info":{"signer_infos":[{"public_key":{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"AymTGWvRvySz1XavUhrz6GIoN8ZyVo278i1TAUfrlJWZ"},"mode_info":{"single":{"mode":"SIGN_MODE_LEGACY_AMINO_JSON"}},"sequence":"2"}],"fee":{"amount":[],"gas_limit":"200000","payer":"","granter":""},"tip":null},"signatures":["Jsj4mUDFElz3H9wgDQiF+MktyagWIOvSngn3zONVWuESXStsiUvMQsGCXKdTM9cjF0nuWJPydI2Z72YcF15hhg=="]}`,
+		},
+		"MsgEditValidator - v051": {
+			src: `{"body":{"messages":[{"@type":"/cosmos.staking.v1beta1.MsgEditValidator", "description":{"moniker":"[do-not-modify]", "identity":"[do-not-modify]", "website":"[do-not-modify]", "security_contact":"[do-not-modify]", "details":"[do-not-modify]"}, "validator_address":"cosmosvaloper1a40r995peauyekrkda2uky5h52j0r0ztvglyew", "commission_rate":"250000000000000000000000000000000000"}]}, "auth_info":{"signer_infos":[{"public_key":{"@type":"/cosmos.crypto.secp256k1.PubKey", "key":"AymTGWvRvySz1XavUhrz6GIoN8ZyVo278i1TAUfrlJWZ"}, "mode_info":{"single":{"mode":"SIGN_MODE_LEGACY_AMINO_JSON"}}, "sequence":"2"}], "fee":{"gas_limit":"200000", "payer":"cosmos1a40r995peauyekrkda2uky5h52j0r0ztfut34a"}}, "signatures":["bdzmirrMp0C64YMdFVOevR/HgelAHIHTRMGx9zBkTqRYEgE8p7FqBt47oU28HOO7/nlNfXjGZoocf8W7LHQBPw=="]}`,
 		},
 	}
 	for name, spec := range specs {
