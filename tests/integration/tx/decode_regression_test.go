@@ -2,6 +2,7 @@ package tx
 
 import (
 	"context"
+	_ "embed"
 	"encoding/hex"
 	"testing"
 
@@ -26,10 +27,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	//go:embed testdata/signed_v0.47.tx
+	msgEditValidatorV047 string
+	//go:embed testdata/signed_v0.50.tx
+	msgEditValidatorV050 string
+	//go:embed testdata/signed_latest.tx
+	msgEditValidatorLatest string
+)
+
 func TestRegression(t *testing.T) {
-	//
-	// simd tx staking edit-validator --account-number=1 --sequence=2 --commission-rate=0.25 --offline --sign-mode=amino-json --from=mykey   --generate-only > unsigned_tx.json
-	// simd tx sign unsigned_tx.json --chain-id=testchain --from=mykey --offline --sign-mode=amino-json --account-number=1 --sequence=2  > signed_tx.json
 	enc := testutil.MakeTestEncodingConfig(codectestutil.CodecOptions{},
 		gov.AppModule{}, staking.AppModule{})
 	addressCodec := enc.InterfaceRegistry.SigningContext().AddressCodec()
@@ -37,20 +44,14 @@ func TestRegression(t *testing.T) {
 	specs := map[string]struct {
 		src string
 	}{
-		"MsgCreateValidator - v047": {
-			src: `{"body":{"messages":[{"@type":"/cosmos.staking.v1beta1.MsgCreateValidator","description":{"moniker":"simapp-test","identity":"","website":"","security_contact":"","details":""},"commission":{"rate":"0.990000000000000000","max_rate":"1.000000000000000000","max_change_rate":"0.100000000000000000"},"min_self_delegation":"100000","delegator_address":"cosmos1a40r995peauyekrkda2uky5h52j0r0ztfut34a","validator_address":"cosmosvaloper1a40r995peauyekrkda2uky5h52j0r0ztvglyew","pubkey":{"@type":"/cosmos.crypto.ed25519.PubKey","key":"4gdqY8r0epCoDDpLrVwo7sWAVwPeqf9PEX4LFECMH3g="},"value":{"denom":"stake","amount":"1000000000"}}],"memo":"","timeout_height":"0","extension_options":[],"non_critical_extension_options":[]},"auth_info":{"signer_infos":[{"public_key":{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"AymTGWvRvySz1XavUhrz6GIoN8ZyVo278i1TAUfrlJWZ"},"mode_info":{"single":{"mode":"SIGN_MODE_LEGACY_AMINO_JSON"}},"sequence":"2"}],"fee":{"amount":[],"gas_limit":"200000","payer":"","granter":""},"tip":null},"signatures":["CJ/2V5zfl3PB/3CEcYbS9y2HTl+oxw098M64VSeIzH18PuBHN4+ou/NzvBKTWMGdTGPOB/AEN1EYj8TxyjApmA=="]}`,
-		},
 		"MsgEditValidator - v047": {
-			src: `{"body":{"messages":[{"@type":"/cosmos.staking.v1beta1.MsgEditValidator","description":{"moniker":"[do-not-modify]","identity":"[do-not-modify]","website":"[do-not-modify]","security_contact":"[do-not-modify]","details":"[do-not-modify]"},"validator_address":"cosmosvaloper1a40r995peauyekrkda2uky5h52j0r0ztvglyew","commission_rate":"0.250000000000000000","min_self_delegation":null}],"memo":"","timeout_height":"0","extension_options":[],"non_critical_extension_options":[]},"auth_info":{"signer_infos":[{"public_key":{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"AymTGWvRvySz1XavUhrz6GIoN8ZyVo278i1TAUfrlJWZ"},"mode_info":{"single":{"mode":"SIGN_MODE_LEGACY_AMINO_JSON"}},"sequence":"2"}],"fee":{"amount":[],"gas_limit":"200000","payer":"","granter":""},"tip":null},"signatures":["9u4PviP9rBSymBOztKF+S9s9Kk50juyKX7B+RXdIdRtlHfJZ2pbzizc8X61x0oFJU75Ob4oVbtfnzNjQmdFiQA=="]}`,
-		},
-		"MsgVoteWeighted - v047": {
-			src: `{"body":{"messages":[{"@type":"/cosmos.gov.v1.MsgVoteWeighted","proposal_id":"1","voter":"cosmos1a40r995peauyekrkda2uky5h52j0r0ztfut34a","options":[{"option":"VOTE_OPTION_YES","weight":"0.600000000000000000"},{"option":"VOTE_OPTION_NO","weight":"0.300000000000000000"},{"option":"VOTE_OPTION_ABSTAIN","weight":"0.050000000000000000"},{"option":"VOTE_OPTION_NO_WITH_VETO","weight":"0.050000000000000000"}],"metadata":""}],"memo":"","timeout_height":"0","extension_options":[],"non_critical_extension_options":[]},"auth_info":{"signer_infos":[{"public_key":{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"AymTGWvRvySz1XavUhrz6GIoN8ZyVo278i1TAUfrlJWZ"},"mode_info":{"single":{"mode":"SIGN_MODE_LEGACY_AMINO_JSON"}},"sequence":"2"}],"fee":{"amount":[],"gas_limit":"200000","payer":"","granter":""},"tip":null},"signatures":["4J2SPFz2RZFwlyw8iMoh/Oq2yX9Zjxg8ULK6Vo6DtDY5CNPEghRUbwLxP2jrPs9vDkn1Y17PrMhjOE9kBg8vpg=="]}`,
+			src: msgEditValidatorV047,
 		},
 		"MsgEditValidator - v050": {
-			src: `{"body":{"messages":[{"@type":"/cosmos.staking.v1beta1.MsgEditValidator","description":{"moniker":"[do-not-modify]","identity":"[do-not-modify]","website":"[do-not-modify]","security_contact":"[do-not-modify]","details":"[do-not-modify]"},"validator_address":"cosmosvaloper1a40r995peauyekrkda2uky5h52j0r0ztvglyew","commission_rate":"0.250000000000000000","min_self_delegation":null}],"memo":"","timeout_height":"0","extension_options":[],"non_critical_extension_options":[]},"auth_info":{"signer_infos":[{"public_key":{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"AymTGWvRvySz1XavUhrz6GIoN8ZyVo278i1TAUfrlJWZ"},"mode_info":{"single":{"mode":"SIGN_MODE_LEGACY_AMINO_JSON"}},"sequence":"2"}],"fee":{"amount":[],"gas_limit":"200000","payer":"","granter":""},"tip":null},"signatures":["Jsj4mUDFElz3H9wgDQiF+MktyagWIOvSngn3zONVWuESXStsiUvMQsGCXKdTM9cjF0nuWJPydI2Z72YcF15hhg=="]}`,
+			src: msgEditValidatorV050,
 		},
-		"MsgEditValidator - v051": {
-			src: `{"body":{"messages":[{"@type":"/cosmos.staking.v1beta1.MsgEditValidator", "description":{"moniker":"[do-not-modify]", "identity":"[do-not-modify]", "website":"[do-not-modify]", "security_contact":"[do-not-modify]", "details":"[do-not-modify]"}, "validator_address":"cosmosvaloper1a40r995peauyekrkda2uky5h52j0r0ztvglyew", "commission_rate":"250000000000000000000000000000000000"}]}, "auth_info":{"signer_infos":[{"public_key":{"@type":"/cosmos.crypto.secp256k1.PubKey", "key":"AymTGWvRvySz1XavUhrz6GIoN8ZyVo278i1TAUfrlJWZ"}, "mode_info":{"single":{"mode":"SIGN_MODE_LEGACY_AMINO_JSON"}}, "sequence":"2"}], "fee":{"gas_limit":"200000", "payer":"cosmos1a40r995peauyekrkda2uky5h52j0r0ztfut34a"}}, "signatures":["bdzmirrMp0C64YMdFVOevR/HgelAHIHTRMGx9zBkTqRYEgE8p7FqBt47oU28HOO7/nlNfXjGZoocf8W7LHQBPw=="]}`,
+		"MsgEditValidator - latest": {
+			src: msgEditValidatorLatest,
 		},
 	}
 	for name, spec := range specs {
