@@ -126,7 +126,9 @@ func (s *CommitStoreTestSuite) TestStore_Snapshotter() {
 func (s *CommitStoreTestSuite) TestStore_Pruning() {
 	storeKeys := []string{storeKey1, storeKey2}
 	pruneOpts := store.NewPruningOptionWithCustom(10, 5)
-	commitStore, err := s.NewStore(dbm.NewMemDB(), storeKeys, log.NewNopLogger())
+	memDb := dbm.NewMemDB()
+	commitStore, err := s.NewStore(memDb, storeKeys, log.NewNopLogger())
+	metadataStore := NewMetadataStore(memDb)
 	s.Require().NoError(err)
 
 	latestVersion := uint64(100)
@@ -155,7 +157,7 @@ func (s *CommitStoreTestSuite) TestStore_Pruning() {
 	pruneVersion := latestVersion - pruneOpts.KeepRecent - 1
 	// check the store
 	for i := uint64(1); i <= latestVersion; i++ {
-		commitInfo, _ := commitStore.GetCommitInfo(i)
+		commitInfo, _ := metadataStore.GetCommitInfo(i)
 		if i <= pruneVersion {
 			s.Require().Nil(commitInfo)
 		} else {

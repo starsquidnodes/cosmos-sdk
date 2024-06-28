@@ -33,8 +33,8 @@ type Committer interface {
 	// WorkingCommitInfo returns the CommitInfo for the working tree.
 	WorkingCommitInfo(version uint64) *proof.CommitInfo
 
-	// LoadVersion loads the tree at the given version.
-	LoadVersion(targetVersion uint64) error
+	// LoadVersion loads the tree at the given version and returns the CommitInfo.
+	LoadVersion(targetVersion uint64) (*proof.CommitInfo, error)
 
 	// Commit commits the working tree to the database.
 	Commit(version uint64) (*proof.CommitInfo, error)

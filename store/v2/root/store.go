@@ -113,19 +113,11 @@ func (s *Store) StateLatest() (uint64, corestore.ReaderMap, error) {
 		return 0, nil, err
 	}
 
-	return v, NewReaderMap(v, s), nil
+	return v, NewReaderMap(v, s.stateStorage), nil
 }
 
 func (s *Store) StateAt(v uint64) (corestore.ReaderMap, error) {
-	// TODO(bez): We may want to avoid relying on the SC metadata here. Instead,
-	// we should add a VersionExists() method to the VersionedDatabase interface.
-	//
-	// Ref: https://github.com/cosmos/cosmos-sdk/issues/19091
-	if cInfo, err := s.stateCommitment.GetCommitInfo(v); err != nil || cInfo == nil {
-		return nil, fmt.Errorf("failed to get commit info for version %d: %w", v, err)
-	}
-
-	return NewReaderMap(v, s), nil
+	return NewReaderMap(v, s.stateStorage), nil
 }
 
 func (s *Store) GetStateStorage() store.VersionedDatabase {
@@ -136,27 +128,20 @@ func (s *Store) GetStateCommitment() store.Committer {
 	return s.stateCommitment
 }
 
-// LastCommitID returns a CommitID based off of the latest internal CommitInfo.
-// If an internal CommitInfo is not set, a new one will be returned with only the
-// latest version set, which is based off of the SC view.
-func (s *Store) LastCommitID() (proof.CommitID, error) {
+// LastCommitInfo returns the CommitID of the last committed state. An error is returning there is
+// no last commit info.
+func (s *Store) LastCommitInfo() (*proof.CommitInfo, error) {
 	if s.lastCommitInfo != nil {
-		return s.lastCommitInfo.CommitID(), nil
+		return s.lastCommitInfo, nil
 	}
-
-	latestVersion, err := s.stateCommitment.GetLatestVersion()
-	if err != nil {
-		return proof.CommitID{}, err
-	}
-
-	return proof.CommitID{Version: latestVersion}, nil
+	return nil, errors.New("no last commit info")
 }
 
 // GetLatestVersion returns the latest version based on the latest internal
 // CommitInfo. An error is returned if the latest CommitInfo or version cannot
 // be retrieved.
 func (s *Store) GetLatestVersion() (uint64, error) {
-	lastCommitID, err := s.LastCommitID()
+	lastCommitID, err := s.LastCommitInfo()
 	if err != nil {
 		return 0, err
 	}
@@ -236,19 +221,13 @@ func (s *Store) LoadVersion(version uint64) error {
 
 func (s *Store) loadVersion(v uint64) error {
 	s.logger.Debug("loading version", "version", v)
+	var err error
 
-	if err := s.stateCommitment.LoadVersion(v); err != nil {
+	if s.lastCommitInfo, err = s.stateCommitment.LoadVersion(v); err != nil {
 		return fmt.Errorf("failed to load SC version %d: %w", v, err)
 	}
 
 	s.commitHeader = nil
-
-	// set lastCommitInfo explicitly s.t. Commit commits the correct version, i.e. v+1
-	var err error
-	s.lastCommitInfo, err = s.stateCommitment.GetCommitInfo(v)
-	if err != nil {
-		return fmt.Errorf("failed to get commit info for version %d: %w", v, err)
-	}
 
 	// if we're migrating, we need to start the migration process
 	if s.isMigrating {

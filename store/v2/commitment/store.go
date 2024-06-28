@@ -91,11 +91,11 @@ func (c *CommitStore) WorkingCommitInfo(version uint64) *proof.CommitInfo {
 	}
 }
 
-func (c *CommitStore) LoadVersion(targetVersion uint64) error {
+func (c *CommitStore) LoadVersion(targetVersion uint64) (*proof.CommitInfo, error) {
 	// Rollback the metadata to the target version.
 	latestVersion, err := c.GetLatestVersion()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if targetVersion < latestVersion {
 		batch := c.db.NewBatch()
@@ -103,17 +103,17 @@ func (c *CommitStore) LoadVersion(targetVersion uint64) error {
 		for version := latestVersion; version > targetVersion; version-- {
 			cInfoKey := []byte(fmt.Sprintf(commitInfoKeyFmt, version))
 			if err := batch.Delete(cInfoKey); err != nil {
-				return err
+				return nil, err
 			}
 		}
 		if err := batch.WriteSync(); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	for _, tree := range c.multiTrees {
 		if err := tree.LoadVersion(targetVersion); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -124,7 +124,10 @@ func (c *CommitStore) LoadVersion(targetVersion uint64) error {
 		cInfo = c.WorkingCommitInfo(targetVersion)
 	}
 
-	return c.metadata.flushCommitInfo(targetVersion, cInfo)
+	if err = c.metadata.flushCommitInfo(targetVersion, cInfo); err != nil {
+		return nil, err
+	}
+	return cInfo, nil
 }
 
 func (c *CommitStore) Commit(version uint64) (*proof.CommitInfo, error) {
@@ -408,7 +411,8 @@ loop:
 		}
 	}
 
-	return snapshotItem, c.LoadVersion(version)
+	_, err := c.LoadVersion(version)
+	return snapshotItem, err
 }
 
 func (c *CommitStore) Close() (ferr error) {

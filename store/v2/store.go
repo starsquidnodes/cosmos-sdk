@@ -61,8 +61,8 @@ type RootStore interface {
 	// and flushed to disk. It must return a hash of the merkle-ized committed state.
 	Commit(cs *corestore.Changeset) ([]byte, error)
 
-	// LastCommitID returns a CommitID pertaining to the last commitment.
-	LastCommitID() (proof.CommitID, error)
+	// LastCommitInfo returns a CommitID pertaining to the last commitment.
+	LastCommitInfo() (*proof.CommitInfo, error)
 
 	// SetMetrics sets the telemetry handler on the RootStore.
 	SetMetrics(m metrics.Metrics)
