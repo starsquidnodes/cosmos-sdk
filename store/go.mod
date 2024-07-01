@@ -26,6 +26,8 @@ require (
 	gotest.tools/v3 v3.5.1
 )
 
+require cosmossdk.io/schema v0.0.0-00010101000000-000000000000
+
 require (
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -76,3 +78,5 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace cosmossdk.io/schema => ../schema

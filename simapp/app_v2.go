@@ -10,12 +10,13 @@ import (
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
-	storetypes "cosmossdk.io/store/types"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	nftkeeper "cosmossdk.io/x/nft/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+
+	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -44,6 +45,10 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
+
+	_ "cosmossdk.io/indexer/postgres"
 )
 
 // DefaultNodeHome default home directories for the application daemon
@@ -222,9 +227,16 @@ func NewSimApp(
 
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
 
-	// register streaming services
-	if err := app.RegisterStreamingServices(appOpts, app.kvStoreKeys()); err != nil {
-		panic(err)
+	if indexerOpts := appOpts.Get("indexer"); indexerOpts != nil {
+		err := app.EnableIndexer(indexerOpts, app.kvStoreKeys(), app.ModuleManager.Modules)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		// register streaming services
+		if err := app.RegisterStreamingServices(appOpts, app.kvStoreKeys()); err != nil {
+			panic(err)
+		}
 	}
 
 	/****  Module Options ****/

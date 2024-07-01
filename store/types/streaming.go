@@ -4,6 +4,8 @@ import (
 	"context"
 
 	abci "github.com/cometbft/cometbft/abci/types"
+
+	"cosmossdk.io/schema/appdata"
 )
 
 // ABCIListener is the interface that we're exposing as a streaming service.
@@ -25,4 +27,48 @@ type StreamingManager struct {
 
 	// StopNodeOnErr halts the node when ABCI streaming service listening results in an error.
 	StopNodeOnErr bool
+}
+
+func FromSchemaListener(listener appdata.Listener) ABCIListener {
+	return &listenerWrapper{listener: listener}
+}
+
+type listenerWrapper struct {
+	listener appdata.Listener
+}
+
+func (p listenerWrapper) ListenFinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
+	if p.listener.StartBlock != nil {
+		err := p.listener.StartBlock(appdata.StartBlockData{
+			Height: uint64(req.Height),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	//// TODO txs, events
+
+	return nil
+}
+
+func (p listenerWrapper) ListenCommit(ctx context.Context, res abci.ResponseCommit, changeSet []*StoreKVPair) error {
+	if p.listener.OnKVPair != nil {
+		for _, _ = range changeSet {
+			//err := p.listener.OnKVPair(
+			//	kv.StoreKey, kv.Key, kv.Value, kv.Delete)
+			//if err != nil {
+			//	return err
+			//}
+			panic("TODO")
+		}
+	}
+	//
+	//if p.listener.Commit != nil {
+	//	err := p.listener.Commit()
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
+	return nil
 }

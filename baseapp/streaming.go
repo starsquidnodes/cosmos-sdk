@@ -10,6 +10,9 @@ import (
 	"cosmossdk.io/store/streaming"
 	storetypes "cosmossdk.io/store/types"
 
+	"cosmossdk.io/schema/decoding"
+	"cosmossdk.io/schema/indexing"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 )
@@ -21,6 +24,33 @@ const (
 	StreamingABCIKeysTomlKey          = "keys"
 	StreamingABCIStopNodeOnErrTomlKey = "stop-node-on-err"
 )
+
+func (app *BaseApp) EnableIndexer(indexerOpts interface{}, keys map[string]*storetypes.KVStoreKey, appModules map[string]any) error {
+	optsMap, ok := indexerOpts.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("invalid indexer options type %T, expected a map", indexerOpts)
+	}
+
+	listener, err := indexing.Start(indexing.Options{
+		Options:    optsMap,
+		Resolver:   decoding.ModuleSetDecoderResolver(appModules),
+		SyncSource: nil,
+		Logger:     app.logger.With("module", "indexer"),
+	})
+	if err != nil {
+		return err
+	}
+
+	exposedKeys := exposeStoreKeysSorted([]string{"*"}, keys)
+	app.cms.AddListeners(exposedKeys)
+
+	app.streamingManager = storetypes.StreamingManager{
+		ABCIListeners: []storetypes.ABCIListener{storetypes.FromSchemaListener(listener)},
+		StopNodeOnErr: true,
+	}
+
+	return nil
+}
 
 // RegisterStreamingServices registers streaming services with the BaseApp.
 func (app *BaseApp) RegisterStreamingServices(appOpts servertypes.AppOptions, keys map[string]*storetypes.KVStoreKey) error {
