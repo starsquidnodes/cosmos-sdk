@@ -44,12 +44,14 @@ $ <appd> tx broadcast ./mytxn.json
 				return err
 			}
 
-			res, err := clientCtx.BroadcastTx(txBytes)
-			if err != nil {
-				return err
-			}
+			fmt.Println(txBytes)
 
-			return clientCtx.PrintProto(res)
+			// res, err := clientCtx.BroadcastTx(txBytes)
+			// if err != nil {
+			// 	return err
+			// }
+
+			// return clientCtx.PrintProto(res)
 		},
 	}
 
