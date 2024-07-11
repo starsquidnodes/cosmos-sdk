@@ -3,14 +3,20 @@ package codec_test
 import (
 	"testing"
 
+	"github.com/cosmos/cosmos-proto/anyutil"
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/cosmos/gogoproto/types/any/test"
 	"github.com/stretchr/testify/require"
+	protov2 "google.golang.org/protobuf/proto"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectestutil "github.com/cosmos/cosmos-sdk/codec/testutil"
+	"github.com/cosmos/cosmos-sdk/codec/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/cosmos/cosmos-sdk/testutil/testdata"
+	"github.com/cosmos/cosmos-sdk/testutil/testdata/testpb"
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
 
@@ -145,4 +151,64 @@ func TestMarshalProtoInterfacePubKey(t *testing.T) {
 	err = ccfg.Codec.UnmarshalInterface(bz, &pk2)
 	require.NoError(err)
 	require.True(pk2.Equals(pk))
+}
+
+func TestAminoGogoPulsarCompat(t *testing.T) {
+	cat := &testdata.Cat{Lives: 10, Moniker: "bongo"}
+	catAny, err := types.NewAnyWithValue(cat)
+	require.NoError(t, err)
+	msg := &testdata.HasAnimal{Animal: catAny, X: 23}
+	msgBz, err := proto.Marshal(msg)
+	require.NoError(t, err)
+	t.Logf("len %d", len(msgBz))
+
+	var msg2 testdata.HasAnimal
+	err = proto.Unmarshal(msgBz, &msg2)
+	require.NoError(t, err)
+	t.Logf("%v", msg2.Animal.GetCachedValue())
+
+	registry := codectypes.NewInterfaceRegistry()
+	registry.RegisterInterface("Animal", (*testdata.Animal)(nil))
+	registry.RegisterImplementations(
+		(*testdata.Animal)(nil),
+		&testdata.Dog{},
+		&testdata.Cat{},
+	)
+
+	err = types.UnpackInterfaces(msg2, registry)
+	require.NoError(t, err)
+	t.Logf("%v", msg2.Animal.GetCachedValue())
+
+	cdc := codec.NewProtoCodec(registry)
+	err = cdc.Unmarshal(msgBz, &msg2)
+	require.NoError(t, err)
+	t.Logf("%v", msg2.Animal.GetCachedValue())
+}
+
+func Test_PulsarBackwardCompat(t *testing.T) {
+	cat := &testpb.Cat{Lives: 10, Moniker: "pulsary"}
+	catAny, err := anyutil.New(cat)
+	require.NoError(t, err)
+	msg := &testpb.HasAnimal{Animal: catAny, X: 23}
+	msgBz, err := protov2.Marshal(msg)
+	require.NoError(t, err)
+
+	var msgRoundTrip testpb.HasAnimal
+	err = protov2.Unmarshal(msgBz, &msgRoundTrip)
+	require.NoError(t, err)
+
+	registry := codectypes.NewInterfaceRegistry()
+	registry.RegisterInterface("Animal", (*testdata.Animal)(nil))
+	registry.RegisterImplementations(
+		(*testdata.Animal)(nil),
+		&testdata.Cat{},
+	)
+
+	var animal testdata.Animal
+	err = registry.UnpackAny(
+		&codectypes.Any{TypeUrl: msg.Animal.TypeUrl, Value: msg.Animal.Value},
+		&animal,
+	)
+	require.NoError(t, err)
+	t.Logf(animal.Greet())
 }
