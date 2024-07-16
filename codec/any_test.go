@@ -193,16 +193,16 @@ func Test_PulsarBackwardCompat(t *testing.T) {
 	msgBz, err := protov2.Marshal(msg)
 	require.NoError(t, err)
 
-	var msgRoundTrip testpb.HasAnimal
-	err = protov2.Unmarshal(msgBz, &msgRoundTrip)
-	require.NoError(t, err)
-
 	registry := codectypes.NewInterfaceRegistry()
 	registry.RegisterInterface("Animal", (*testdata.Animal)(nil))
 	registry.RegisterImplementations(
 		(*testdata.Animal)(nil),
 		&testdata.Cat{},
 	)
+
+	var msgRoundTrip testpb.HasAnimal
+	err = protov2.Unmarshal(msgBz, &msgRoundTrip)
+	require.NoError(t, err)
 
 	var animal testdata.Animal
 	err = registry.UnpackAny(
