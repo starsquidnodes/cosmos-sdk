@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/cosmos/gogoproto/proto"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoregistry"
@@ -118,6 +119,7 @@ func ProvideAppBuilder[T transaction.Tx](
 	protodesc.Resolver,
 	protoregistry.MessageTypeResolver,
 ) {
+	fmt.Println("ProvideAppBuilder", interfaceRegistrar, amino)
 	protoFiles := proto.HybridResolver
 	protoTypes := protoregistry.GlobalTypes
 
@@ -151,10 +153,12 @@ type AppInputs struct {
 	InterfaceRegistrar registry.InterfaceRegistrar
 	LegacyAmino        legacy.Amino
 	Logger             log.Logger
+	Viper			   *viper.Viper `optional:"true"`
 	StoreOptions       *rootstorev2.FactoryOptions `optional:"true"`
 }
 
 func SetupAppBuilder(inputs AppInputs) {
+	fmt.Println("is there any viper", inputs.Viper)
 	app := inputs.AppBuilder.app
 	app.config = inputs.Config
 	app.appConfig = inputs.AppConfig
@@ -175,6 +179,7 @@ func ProvideModuleManager[T transaction.Tx](
 	config *runtimev2.Module,
 	modules map[string]appmodulev2.AppModule,
 ) *MM[T] {
+	fmt.Println("ProvideModuleManager")
 	return NewModuleManager[T](logger, config, modules)
 }
 
@@ -184,6 +189,7 @@ func ProvideEnvironment[T transaction.Tx](logger log.Logger, config *runtimev2.M
 	store.KVStoreService,
 	store.MemoryStoreService,
 ) {
+	fmt.Println("ProvideEnvironment")
 	var (
 		kvService    store.KVStoreService     = failingStoreService{}
 		memKvService store.MemoryStoreService = failingStoreService{}

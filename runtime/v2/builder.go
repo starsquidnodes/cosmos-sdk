@@ -116,6 +116,11 @@ func (a *AppBuilder[T]) Build(opts ...AppBuilderOption[T]) (*App[T], error) {
 
 	a.app.stf = stf
 
+	// storeOptions := rootstore.FactoryOptions{
+	// 	Logger: a.app.logger,
+	// 	RootDir: ,
+	// }
+
 	rs, err := rootstore.CreateRootStore(a.storeOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create root store: %w", err)
