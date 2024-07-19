@@ -17,11 +17,7 @@ type Field struct {
 	// TODO: in a future update, stricter criteria and validation for address prefixes should be added.
 	AddressPrefix string
 
-	// EnumDefinition is the definition of the enum type and is only valid when Kind is EnumKind.
-	// The same enum types can be reused in the same module schema, but they always must contain
-	// the same values for the same enum name. This possibly introduces some duplication of
-	// definitions but makes it easier to reason about correctness and validation in isolation.
-	EnumDefinition EnumDefinition
+	EnumType string
 }
 
 // Validate validates the field.

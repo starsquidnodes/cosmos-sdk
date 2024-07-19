@@ -4,10 +4,6 @@ import "fmt"
 
 // ObjectType describes an object type a module schema.
 type ObjectType struct {
-	// Name is the name of the object type. It must be unique within the module schema
-	// and conform to the NameFormat regular expression.
-	Name string
-
 	// KeyFields is a list of fields that make up the primary key of the object.
 	// It can be empty in which case indexers should assume that this object is
 	// a singleton and only has one value. Field names must be unique within the
@@ -27,18 +23,15 @@ type ObjectType struct {
 	RetainDeletions bool
 }
 
+func (ObjectType) isType() {}
+
 // Validate validates the object type.
 func (o ObjectType) Validate() error {
-	return o.validate(map[string]map[string]bool{})
 }
 
 // validate validates the object type with an enumValueMap that can be
 // shared across a whole module schema.
-func (o ObjectType) validate(enumValueMap map[string]map[string]bool) error {
-	if !ValidateName(o.Name) {
-		return fmt.Errorf("invalid object type name %q", o.Name)
-	}
-
+func (o ObjectType) validateWithSchema(types map[string]Type) error {
 	fieldNames := map[string]bool{}
 
 	for _, field := range o.KeyFields {
@@ -55,9 +48,6 @@ func (o ObjectType) validate(enumValueMap map[string]map[string]bool) error {
 		}
 		fieldNames[field.Name] = true
 
-		if err := checkEnumCompatibility(enumValueMap, field); err != nil {
-			return err
-		}
 	}
 
 	for _, field := range o.ValueFields {
@@ -69,14 +59,10 @@ func (o ObjectType) validate(enumValueMap map[string]map[string]bool) error {
 			return fmt.Errorf("duplicate field name %q", field.Name)
 		}
 		fieldNames[field.Name] = true
-
-		if err := checkEnumCompatibility(enumValueMap, field); err != nil {
-			return err
-		}
 	}
 
 	if len(o.KeyFields) == 0 && len(o.ValueFields) == 0 {
-		return fmt.Errorf("object type %q has no key or value fields", o.Name)
+		return fmt.Errorf("object type has no key or value fields")
 	}
 
 	return nil
