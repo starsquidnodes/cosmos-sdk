@@ -29,8 +29,13 @@ type ObjectType struct {
 
 func (ObjectType) isType() {}
 
+func (o ObjectType) TypeName() string {
+	return o.Name
+}
+
 // Validate validates the object type.
 func (o ObjectType) Validate() error {
+	panic("TODO")
 }
 
 // validate validates the object type with an enumValueMap that can be
@@ -63,10 +68,6 @@ func (o ObjectType) validateWithSchema(types map[string]Type) error {
 			return fmt.Errorf("duplicate field name %q", field.Name)
 		}
 		fieldNames[field.Name] = true
-
-		if err := checkEnumCompatibility(enumValueMap, field); err != nil {
-			return err
-		}
 	}
 
 	if len(o.KeyFields) == 0 && len(o.ValueFields) == 0 {

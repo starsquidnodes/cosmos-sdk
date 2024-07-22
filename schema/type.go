@@ -1,7 +1,7 @@
 package schema
 
 type Type interface {
-	Name() string
+	TypeName() string
 	Validate() error
 
 	isType()

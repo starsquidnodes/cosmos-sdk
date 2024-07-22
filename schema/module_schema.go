@@ -9,9 +9,8 @@ type ModuleSchema struct {
 
 // Validate validates the module schema.
 func (s ModuleSchema) Validate() error {
-	enumValueMap := map[string]map[string]bool{}
-	for name, typ := range s.Types {
-		if err := typ.validate(enumValueMap); err != nil {
+	for _, typ := range s.Types {
+		if err := typ.validateWithSchema(s.Types); err != nil {
 			return err
 		}
 	}
@@ -21,10 +20,15 @@ func (s ModuleSchema) Validate() error {
 
 // ValidateObjectUpdate validates that the update conforms to the module schema.
 func (s ModuleSchema) ValidateObjectUpdate(update ObjectUpdate) error {
-	for _, objType := range s.ObjectTypes {
-		if objType.Name == update.TypeName {
-			return objType.ValidateObjectUpdate(update)
-		}
+	typ, ok := s.Types[update.TypeName]
+	if !ok {
+		return fmt.Errorf("object type %q not found in module schema", update.TypeName)
 	}
-	return fmt.Errorf("object type %q not found in module schema", update.TypeName)
+
+	objType, ok := typ.(ObjectType)
+	if !ok {
+		return fmt.Errorf("object type %q is not an object type", update.TypeName)
+	}
+
+	return objType.ValidateObjectUpdate(update)
 }

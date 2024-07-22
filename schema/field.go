@@ -39,14 +39,15 @@ func (c Field) Validate() error {
 		return fmt.Errorf("address prefix is only valid for field %q with type Bech32AddressKind", c.Name)
 	}
 
+	panic("TODO: enum kind")
 	// enum definition only valid with EnumKind
-	if c.Kind == EnumKind {
-		if err := c.EnumDefinition.Validate(); err != nil {
-			return fmt.Errorf("invalid enum definition for field %q: %v", c.Name, err) //nolint:errorlint // false positive due to using go1.12
-		}
-	} else if c.Kind != EnumKind && (c.EnumDefinition.Name != "" || c.EnumDefinition.Values != nil) {
-		return fmt.Errorf("enum definition is only valid for field %q with type EnumKind", c.Name)
-	}
+	//if c.Kind == EnumKind {
+	//	if err := c.EnumDefinition.Validate(); err != nil {
+	//		return fmt.Errorf("invalid enum definition for field %q: %v", c.Name, err) //nolint:errorlint // false positive due to using go1.12
+	//	}
+	//} else if c.Kind != EnumKind && (c.EnumDefinition.Name != "" || c.EnumDefinition.Values != nil) {
+	//	return fmt.Errorf("enum definition is only valid for field %q with type EnumKind", c.Name)
+	//}
 
 	return nil
 }
@@ -67,7 +68,8 @@ func (c Field) ValidateValue(value interface{}) error {
 	}
 
 	if c.Kind == EnumKind {
-		return c.EnumDefinition.ValidateValue(value.(string))
+		panic("TODO: enum kind")
+		//return c.EnumDefinition.ValidateValue(value.(string))
 	}
 
 	return nil
