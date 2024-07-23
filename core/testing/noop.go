@@ -4,7 +4,7 @@ import "cosmossdk.io/core/log"
 
 // NewNopLogger returns a new logger that does nothing.
 func NewNopLogger() log.Logger {
-	// The custom nopLogger is about 3x faster than a zeroLogWrapper with zerolog.Nop().
+	// The custom nopLogger is about 3x faster than a zerolog.Nop().
 	return nopLogger{}
 }
 

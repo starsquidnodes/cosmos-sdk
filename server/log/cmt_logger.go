@@ -3,7 +3,7 @@ package server
 import (
 	cmtlog "github.com/cometbft/cometbft/libs/log"
 
-	"cosmossdk.io/log"
+	corelog "cosmossdk.io/core/log"
 )
 
 var _ cmtlog.Logger = (*CometLoggerWrapper)(nil)
@@ -11,7 +11,7 @@ var _ cmtlog.Logger = (*CometLoggerWrapper)(nil)
 // CometLoggerWrapper provides a wrapper around a cosmossdk.io/log instance.
 // It implements CometBFT's Logger interface.
 type CometLoggerWrapper struct {
-	log.Logger
+	corelog.Logger
 }
 
 // With returns a new wrapped logger with additional context provided by a set

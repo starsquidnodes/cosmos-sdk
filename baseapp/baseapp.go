@@ -18,9 +18,8 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"cosmossdk.io/core/header"
-	"cosmossdk.io/core/log"
+	corelog "cosmossdk.io/core/log"
 	errorsmod "cosmossdk.io/errors"
-	sdklog "cosmossdk.io/log"
 	"cosmossdk.io/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	"cosmossdk.io/store/snapshots"
@@ -64,7 +63,7 @@ var _ servertypes.ABCI = (*BaseApp)(nil)
 type BaseApp struct {
 	// initialized on creation
 	mu                sync.Mutex // mu protects the fields below.
-	logger            log.Logger
+	logger            corelog.Logger
 	name              string                      // application name from abci.BlockInfo
 	db                dbm.DB                      // common DB backend
 	cms               storetypes.CommitMultiStore // Main (uncached) state
@@ -192,10 +191,10 @@ type BaseApp struct {
 // variadic number of option functions, which act on the BaseApp to set
 // configuration choices.
 func NewBaseApp(
-	name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecoder, options ...func(*BaseApp),
+	name string, logger corelog.Logger, db dbm.DB, txDecoder sdk.TxDecoder, options ...func(*BaseApp),
 ) *BaseApp {
 	app := &BaseApp{
-		logger:           logger.With(log.ModuleKey, "baseapp"),
+		logger:           logger.With(corelog.ModuleKey, "baseapp"),
 		name:             name,
 		db:               db,
 		cms:              store.NewCommitMultiStore(db, sdklog.LogWrapper{Logger: logger}, storemetrics.NewNoOpMetrics()), // by default we use a no-op metric gather in store
@@ -270,7 +269,7 @@ func (app *BaseApp) Version() string {
 }
 
 // Logger returns the logger of the BaseApp.
-func (app *BaseApp) Logger() log.Logger {
+func (app *BaseApp) Logger() corelog.Logger {
 	return app.logger
 }
 

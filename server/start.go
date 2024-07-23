@@ -36,7 +36,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"cosmossdk.io/log"
+	corelog "cosmossdk.io/core/log"
 	pruningtypes "cosmossdk.io/store/pruning/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -248,7 +248,7 @@ func startStandAlone[T types.Application](svrCtx *Context, svrCfg serverconfig.C
 		return fmt.Errorf("error creating listener: %w", err)
 	}
 
-	svr.SetLogger(servercmtlog.CometLoggerWrapper{Logger: svrCtx.Logger.With("module", "abci-server")})
+	svr.SetLogger(servercmtlog.CometLoggerWrapper{Logger: svrCtx.Logger.With(corelog.ModuleKey, "abci-server")})
 
 	g, ctx := getCtx(svrCtx, false)
 
@@ -451,7 +451,7 @@ func getGenDocProvider(cfg *cmtcfg.Config) func() (node.ChecksummedGenesisDoc, e
 }
 
 // SetupTraceWriter sets up the trace writer and returns a cleanup function.
-func SetupTraceWriter(logger log.Logger, traceWriterFile string) (traceWriter io.WriteCloser, cleanup func(), err error) {
+func SetupTraceWriter(logger corelog.Logger, traceWriterFile string) (traceWriter io.WriteCloser, cleanup func(), err error) {
 	// clean up the traceWriter when the server is shutting down
 	cleanup = func() {}
 

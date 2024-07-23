@@ -62,7 +62,7 @@ func NewDefaultContext() *Context {
 	)
 }
 
-func NewContext(v *viper.Viper, config *cmtcfg.Config, logger log.Logger) *Context {
+func NewContext(v *viper.Viper, config *cmtcfg.Config, logger corelog.Logger) *Context {
 	return &Context{v, config, logger}
 }
 
@@ -171,7 +171,7 @@ func InterceptConfigsAndCreateContext(cmd *cobra.Command, customAppConfigTemplat
 
 // CreateSDKLogger creates a the default SDK logger.
 // It reads the log level and format from the server context.
-func CreateSDKLogger(ctx *Context, out io.Writer) (log.Logger, error) {
+func CreateSDKLogger(ctx *Context, out io.Writer) (corelog.Logger, error) {
 	var opts []log.Option
 	if ctx.Viper.GetString(flags.FlagLogFormat) == flags.OutputFormatJSON {
 		opts = append(opts, log.OutputJSONOption())
@@ -407,7 +407,7 @@ func ExternalIP() (string, error) {
 //
 // Note, the blocking behavior of this depends on the block argument.
 // The caller must ensure the corresponding context derived from the cancelFn is used correctly.
-func ListenForQuitSignals(g *errgroup.Group, block bool, cancelFn context.CancelFunc, logger log.Logger) {
+func ListenForQuitSignals(g *errgroup.Group, block bool, cancelFn context.CancelFunc, logger corelog.Logger) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
