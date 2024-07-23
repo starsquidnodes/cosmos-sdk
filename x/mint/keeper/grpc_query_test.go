@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
-	"cosmossdk.io/log"
+	coretesting "cosmossdk.io/core/testing"
 	storetypes "cosmossdk.io/store/types"
 	authtypes "cosmossdk.io/x/auth/types"
 	"cosmossdk.io/x/mint"
@@ -34,7 +34,7 @@ type MintTestSuite struct {
 func (suite *MintTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(codectestutil.CodecOptions{}, mint.AppModule{})
 	key := storetypes.NewKVStoreKey(types.StoreKey)
-	storeService := runtime.NewEnvironment(runtime.NewKVStoreService(key), log.NewNopLogger())
+	storeService := runtime.NewEnvironment(runtime.NewKVStoreService(key), coretesting.NewNopLogger())
 	testCtx := testutil.DefaultContextWithDB(suite.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	suite.ctx = testCtx.Ctx
 

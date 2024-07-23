@@ -9,7 +9,7 @@ import (
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/grpc"
 
-	"cosmossdk.io/log"
+	corelog "cosmossdk.io/core/log"
 	"cosmossdk.io/store/snapshots"
 	storetypes "cosmossdk.io/store/types"
 
@@ -65,7 +65,7 @@ type (
 
 	// AppCreator is a function that allows us to lazily initialize an
 	// application using various configurations.
-	AppCreator[T Application] func(log.Logger, dbm.DB, io.Writer, AppOptions) T
+	AppCreator[T Application] func(corelog.Logger, dbm.DB, io.Writer, AppOptions) T
 
 	// ExportedApp represents an exported app state, along with
 	// validators, consensus params and latest app height.
@@ -83,7 +83,7 @@ type (
 	// AppExporter is a function that dumps all app state to
 	// JSON-serializable structure and returns the current validator set.
 	AppExporter func(
-		logger log.Logger,
+		logger corelog.Logger,
 		db dbm.DB,
 		traceWriter io.Writer,
 		height int64,
