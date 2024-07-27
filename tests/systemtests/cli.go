@@ -366,7 +366,7 @@ func (c CLIWrapper) SubmitGovProposal(proposalJson string, args ...string) strin
 	pathToProposal := filepath.Join(c.t.TempDir(), "proposal.json")
 	err := os.WriteFile(pathToProposal, []byte(proposalJson), os.FileMode(0o744))
 	require.NoError(c.t, err)
-	c.t.Log("Submit upgrade proposal")
+	c.t.Log("Submitting proposal")
 	return c.Run(append([]string{"tx", "gov", "submit-proposal", pathToProposal}, args...)...)
 }
 

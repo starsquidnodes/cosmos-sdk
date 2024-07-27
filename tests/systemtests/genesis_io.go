@@ -44,3 +44,12 @@ func GetGenesisBalance(rawGenesis []byte, addr string) sdk.Coins {
 	}
 	return r
 }
+
+func SetStakingParams(t *testing.T, maxValidators int64) GenesisMutator {
+	t.Helper()
+	return func(genesis []byte) []byte {
+		state, err := sjson.SetRawBytes(genesis, "app_state.staking.params.max_validators", []byte(fmt.Sprintf("%d", maxValidators)))
+		require.NoError(t, err)
+		return state
+	}
+}
