@@ -319,6 +319,7 @@ func (c *Context) getAddressCodec(field protoreflect.FieldDescriptor) address.Co
 }
 
 func (c *Context) getGetSignersFn(messageDescriptor protoreflect.MessageDescriptor, add bool) (GetSignersFunc, error) {
+	panic("this is not working!")
 	f, ok := c.customGetSignerFuncs[messageDescriptor.FullName()]
 	if ok {
 		return f, nil
