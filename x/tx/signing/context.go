@@ -326,6 +326,7 @@ func (c *Context) getGetSignersFn(messageDescriptor protoreflect.MessageDescript
 	f, ok = c.getSignersFuncs[messageDescriptor.FullName()]
 	if !ok {
 		if !add {
+			panic(fmt.Sprintf("no GetSignersFunc found for message %s; have you called Validate()?", messageDescriptor.FullName()))
 			return nil, fmt.Errorf("no GetSignersFunc found for message %s; have you called Validate()?", messageDescriptor.FullName())
 		}
 
