@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"text/template"
 
 	"github.com/spf13/viper"
@@ -50,6 +51,8 @@ func getClientConfig(configPath string, v *viper.Viper) (*ClientConfig, error) {
 	v.AddConfigPath(configPath)
 	v.SetConfigName("client")
 	v.SetConfigType("toml")
+
+	v.SetConfigFile(filepath.Join(configPath, "client.toml"))
 
 	if err := v.ReadInConfig(); err != nil {
 		return nil, err
